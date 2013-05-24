@@ -96,11 +96,14 @@ TestBox360Engine = function (opts) {
   this._memory = "clean";
   this._numberOfConnectedControllers = 0;
   this._controlState = {};
+  this._initControlStates();
 }
 TestBox360Engine.prototype = new EmuEngine();
 
 TestBox360Engine.prototype._initControlStates = function() {
-
+  for (var i=0; i<this.maxNumberOfControllers(); i++) {
+    this._controlState[i] = {};
+  }
 }
 
 TestBox360Engine.prototype._tick = function() {
