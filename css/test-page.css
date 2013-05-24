@@ -1,28 +1,37 @@
 #canvas {
 	border-style: solid;
 	border-width: 3px;
+	position:relative;
 }
+
+#buttons {
+	position:relative;
+	border-style:solid;
+	border-color:#B8B8B8;
+	}
 
 .panel-button {
 	margin-top: 30px;
 	margin-bottom: 30px;
+	margin-right:20%;
 	border:2px solid black;
 	padding:10px 30px; 
 	background:#B8B8B8;
-	text-transform:uppercase;
 	letter-spacing:5px;
-	font-weight: bold; 
-
+	width: 300;
+	height: 50;
+	font-weight: bold;
+	text-transform: uppercase;
 }
 
 #controllers-panel-header {
 	margin-top: 30px;
 	margin-bottom: 30px;
-	margin-left:210px;
+
 	border:2px solid black;
 	padding:10px 30px; 
 	background:#dddddd;
-	width:200px;
+	
 	border-radius:25px;
 }
 
@@ -139,4 +148,37 @@ background-color: black;
 	position: absolute;
 	top:30;
 	right: 0;
+}
+
+.controller-joystick {
+	position: relative;
+
+	border-style: solid;
+	border-width: 2px;
+	width: 90;
+	height: 90;
+	border-radius:25px;
+	margin-left: 25px;
+    margin-right: auto;
+    background-color: black;
+
+}
+
+.controller-joystick-outer {
+	background-color:white;
+	border-radius: 50%;
+	width: 90px;
+	height: 90px; 
+	position:absolute;
+	margin:auto;
+}
+.controller-joystick-inner {
+	background-color: black;
+	border-radius: 50%;
+	width: 30px;
+	height: 30px; 
+	position: relative;
+	top:30px;
+	left:30px;
+
 }
