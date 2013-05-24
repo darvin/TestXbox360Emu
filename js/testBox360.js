@@ -137,12 +137,12 @@ TestBox360Engine.prototype.buttonNames = function() {
     "ButtonA",
     "ButtonB",
     "ButtonC",
-    "ButtonShiftLeft1",
-    "ButtonShiftLeft2",
-    "ButtonShiftRight1",
-    "ButtonShiftRight2",
-    "ButtonContolSelect",
-    "ButtonContolStart",
+    "ShiftButtonLeft1",
+    "ShiftButtonLeft2",
+    "ShiftButtonRight1",
+    "ShiftButtonRight2",
+    "ControlButtonSelect",
+    "ControlButtonStart",
 
   ];
 }
