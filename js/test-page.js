@@ -4,8 +4,19 @@ $(function(){
   controllerPrototype.remove();
   console.log("started");
 
-  var engine = new TestBox360Engine();
-  // engine.reset();
+
+  var emuCanvas = document.getElementById("emu-canvas");
+  console.log(emuCanvas, emuCanvas.getContext);
+  var ctx=emuCanvas.getContext("2d");
+
+  var engine = new TestBox360Engine({
+    onVideoFrame: function(buffer) {
+      ctx.putImageData(buffer, 0,0);
+    }
+  });
+  engine.reset();
+  emuCanvas.width = engine.screenWidth();
+  emuCanvas.height = engine.screenHeight();
 
 
   var controllerUIRepresentation = function (engine) {
@@ -72,6 +83,10 @@ $(function(){
     var joyContainer = joyPrototype.parent();
     joyPrototype.remove();
 
+    controller.find(".controller-header-close-button").mousedown(function(){
+      engine.controllerDisconnected(player);
+      controller.remove();
+    });
 
     $.each(controls.buttons, function(buttonType, buttons){
       $.each(buttons, function(i, buttonName){
@@ -118,9 +133,31 @@ $(function(){
   }
 
 
-  for(var i = 0; i < engine.maxNumberOfControllers(); i++) {
-    console.log("creating Controller");
-    createControllerForPlayer(i);
+
+
+
+  var lastPlayer = 0;
+  var addController = function(){
+    if (lastPlayer<engine.maxNumberOfControllers()){
+      createControllerForPlayer(lastPlayer);
+
+      engine.controllerConnected(lastPlayer);
+      lastPlayer ++;
+    }
   };
+  addController();
+  $("#button-add-controller").mousedown(addController);
+
+  $("#button-pause").mousedown(function(){
+    engine.stop();
+  });
+  $("#button-play").mousedown(function(){
+    engine.start();
+  });
+  $("#button-reset").mousedown(function(){
+    engine.reset();
+  });
+
+
 
 });

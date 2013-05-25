@@ -88,6 +88,153 @@ EmuEngine.prototype.controllerDisconnected = function(player) {
 
 
 
+var TEST_BOX_360_SCREEN_WIDTH = 700;
+var TEST_BOX_360_SCREEN_HEIGHT = 700;
+
+var ProcessingSketch = (function($p) {
+
+ var baseX1 = 0,baseY1 = 0,baseX2 = 0,baseY2 = 0;
+
+var baseLength = 0;
+
+var xCoords = null,yCoords = null;
+
+var ellipseX = 0,ellipseY = 0,ellipseRadius =  6;
+
+var directionX = 0,directionY = 0;
+
+var ellipseSpeed =  3.5;
+
+var velocityX = 0,velocityY = 0;
+
+function setup() {
+$p.size(TEST_BOX_360_SCREEN_WIDTH, TEST_BOX_360_SCREEN_HEIGHT);
+
+  $p.frameRate(30);
+
+  $p.fill(128);
+
+  $p.smooth();
+
+  baseX1 = 0;
+
+  baseY1 = $p.height-150;
+
+  baseX2 = $p.width;
+
+  baseY2 = $p.height;
+
+  ellipseX = $p.width/2;
+
+  directionX = $p.random(0.1, 0.99);
+
+  directionY = $p.random(0.1, 0.99);
+
+  var directionVectLength =  $p.sqrt(directionX*directionX +
+
+            directionY*directionY);
+
+  directionX /= directionVectLength;
+
+  directionY /= directionVectLength;
+}
+$p.setup = setup;
+
+function draw() {
+$p.fill(0, 12);
+
+  $p.noStroke();
+
+  $p.rect(0, 0, $p.width, $p.height);
+
+  baseLength = $p.dist(baseX1, baseY1, baseX2, baseY2);
+
+  xCoords = $p.createJavaArray('float', [$p.ceil(baseLength)]);
+
+  yCoords = $p.createJavaArray('float', [$p.ceil(baseLength)]);
+
+  for (var i = 0;  i<xCoords.length;  i++){
+xCoords[i] = baseX1 + ((baseX2-baseX1)/baseLength)*i;
+
+    yCoords[i] = baseY1 + ((baseY2-baseY1)/baseLength)*i;
+}
+
+  $p.fill(200);
+
+  $p.quad(baseX1, baseY1, baseX2, baseY2, baseX2, $p.height, 0, $p.height);
+
+  var baseDeltaX =  (baseX2-baseX1)/baseLength;
+
+  var baseDeltaY =  (baseY2-baseY1)/baseLength;
+
+  var normalX =  -baseDeltaY;
+
+  var normalY =  baseDeltaX;
+
+  $p.noFill();
+
+  $p.stroke(200);
+
+  $p.ellipse(ellipseX, ellipseY, ellipseRadius*2, ellipseRadius*2);
+
+  velocityX = directionX * ellipseSpeed;
+
+  velocityY = directionY * ellipseSpeed;
+
+  ellipseX += velocityX;
+
+  ellipseY += velocityY;
+
+  var incidenceVectorX =  -directionX;
+
+  var incidenceVectorY =  -directionY;
+
+  for (var i = 0;  i<xCoords.length;  i++){
+if ($p.dist(ellipseX, ellipseY, xCoords[i], yCoords[i]) < ellipseRadius){
+var dot =  incidenceVectorX*normalX + incidenceVectorY*normalY;
+
+      var reflectionVectorX =  2*normalX*dot - incidenceVectorX;
+
+      var reflectionVectorY =  2*normalY*dot - incidenceVectorY;
+
+      directionX = reflectionVectorX;
+
+      directionY = reflectionVectorY;
+
+      $p.stroke(255, 128, 0);
+
+      $p.line(ellipseX, ellipseY, ellipseX-normalX*100,
+
+            ellipseY-normalY*100);
+}
+}
+
+  if (ellipseX > $p.width-ellipseRadius){
+ellipseX = $p.width-ellipseRadius;
+
+    directionX *= -1;
+}
+
+  if (ellipseX < ellipseRadius){
+ellipseX = ellipseRadius;
+
+    directionX *= -1;
+}
+
+  if (ellipseY < ellipseRadius){
+ellipseY = ellipseRadius;
+
+    directionY *= -1;
+
+    baseY1 = $p.random($p.height-100, $p.height);
+
+    baseY2 = $p.random($p.height-100, $p.height);
+}
+}
+$p.draw = draw;
+})
+
+
 
 
 // # TestBox360 simulator
@@ -96,7 +243,13 @@ TestBox360Engine = function (opts) {
   this._memory = "clean";
   this._numberOfConnectedControllers = 0;
   this._controlState = {};
+  this._canvas = document.createElement("canvas");
+  this._ctx = this._canvas.getContext("2d");
+  this._p = null;
+  this.opts = opts;
   this._initControlStates();
+  this._initScreen();
+
 }
 TestBox360Engine.prototype = new EmuEngine();
 
@@ -105,11 +258,16 @@ TestBox360Engine.prototype._initControlStates = function() {
     this._controlState[i] = {};
   }
 }
+TestBox360Engine.prototype._initScreen = function() {
+  if (this._p)
+    this._p.exit();
+  this._p = new Processing(this._canvas, ProcessingSketch);
+
+}
+
+
 
 TestBox360Engine.prototype._tick = function() {
-  console.log(this);
-
-  console.log("Tick");
 
   //randomize memory
   if (Math.random()<0.7) {
@@ -119,7 +277,6 @@ TestBox360Engine.prototype._tick = function() {
     
       this._memory = this._memory.substr(0, index) + newChar + this._memory.substr(index+newChar.length);
   }
-  console.log("RAM: " + this._memory);
 
   //get button state
 
@@ -127,8 +284,13 @@ TestBox360Engine.prototype._tick = function() {
   //draw picture
 
 
-  setTimeout(this._tick.bind(this), 1000);
+
+  this.opts.onVideoFrame(this._canvas.getContext("2d").getImageData(0,0, this._canvas.width, this._canvas.width));
+
+  setTimeout(this._tick.bind(this), 1);
 }
+
+
 
 
 TestBox360Engine.prototype.buttonNames = function() {
@@ -158,10 +320,10 @@ TestBox360Engine.prototype.axisNames = function() {
   ]
 }
 TestBox360Engine.prototype.screenWidth = function() {
-  return 1024;
+  return TEST_BOX_360_SCREEN_WIDTH;
 }
 TestBox360Engine.prototype.screenHeight = function() {
-  return 768;
+  return TEST_BOX_360_SCREEN_HEIGHT;
 }
 TestBox360Engine.prototype.maxNumberOfControllers = function() {
   return 4;
@@ -173,10 +335,12 @@ TestBox360Engine.prototype.loadRom = function(rom) {
 }
 TestBox360Engine.prototype.stop = function() {
   this._running = false;
+  this._p.noLoop();
 }
 TestBox360Engine.prototype.start = function() {
   this._running = true;
   console.log(this);
+  this._p.loop();
 
   this._tick();
 }
@@ -185,7 +349,7 @@ TestBox360Engine.prototype.reset = function() {
   this._numberOfConnectedControllers = 0;
   this._controlState = {};
   this._initControlStates();
-  console.log(this);
+  this._initScreen();
   this.start();
 }
 TestBox360Engine.prototype.isRunning = function() {

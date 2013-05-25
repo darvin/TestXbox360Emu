@@ -17,17 +17,19 @@
 	<div class="container">
 		<div class="row">
 			<div id="canvas" class="span7">
-				<canvas width="500px" height="500px">
+				<canvas id="emu-canvas">
 				</canvas>
 			</div>
 			<div id="buttons" class="span4 btn-group btn-group-vertical">
-					 <button  class="panel-button btn" type="button">
+					 <button id="button-pause" class="panel-button btn" type="button">
 					 	<i class="icon-pause"></i><br>pause</button>
-					 <button  class="panel-button btn" type="button"><i class="icon-off"></i><br>reset </button>
-					 <button  class="panel-button btn" type="button"><i class="icon-save"></i><br>save</button>
-					 <button  class="panel-button btn" type="button"><i class="icon-folder-open-alt"></i><br> open</button>
-					 <button  class="panel-button btn" type="button"><i class="icon-folder-open"> </i><br>open rom </button>
-					 <button  class="panel-button btn" type="button"><i class="icon-volume-off"></i><br>volume off</button>
+					 <button id="button-play" class="panel-button btn" type="button">
+					 	<i class="icon-play"></i><br>play</button>
+					 <button  id="button-reset"  class="panel-button btn" type="button"><i class="icon-off"></i><br>reset </button>
+					 <button id="button-save"  class="panel-button btn" type="button"><i class="icon-save"></i><br>save</button>
+					 <button id="button-load"  class="panel-button btn" type="button"><i class="icon-folder-open-alt"></i><br> open</button>
+					 <button id="button-open-rom"  class="panel-button btn" type="button"><i class="icon-folder-open"> </i><br>open rom </button>
+					 <button id="button-sound"  class="panel-button btn" type="button"><i class="icon-volume-off"></i><br>volume off</button>
 			</div>
 
 		</div>
@@ -35,7 +37,7 @@
 			<div id="controllers-panel" class="span12">
 				<div id="controllers-panel-header">
 					<div id="controllers-text">Controllers </div>
-					<button class="add-controller-button" type="button">+</button>
+					<button id="button-add-controller" class="add-controller-button" type="button">+</button>
 
 				</div>
 				<div class="controller" id="controller-prototype">
@@ -96,6 +98,7 @@
   <script src="./js/jquery-ui.js"></script>
   <script src="./js/bootstrap.js"></script>
 
+  <script src="./js/processing.js"></script>
 
   <script src="./js/testBox360.js"></script>
   <script src="./js/test-page.js"></script>
