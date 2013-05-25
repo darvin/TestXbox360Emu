@@ -9,9 +9,41 @@ $(function(){
   console.log(emuCanvas, emuCanvas.getContext);
   var ctx=emuCanvas.getContext("2d");
 
+
+  var audioContext;
+  if (typeof AudioContext !== "undefined") {
+    audioContext = new AudioContext();
+  } else if (typeof webkitAudioContext !== "undefined") {
+    audioContext = new webkitAudioContext();
+  } else {
+    throw new Error('AudioContext not supported. :(');
+  }
+
+
+  var lastAudioTimeFinish =0;
   var engine = new TestBox360Engine({
     onVideoFrame: function(buffer) {
       ctx.putImageData(buffer, 0,0);
+    },
+    onAudioSamples: function(channel, samples) {
+        // creates a sound source
+        var source = audioContext.createBufferSource();
+        var buffer = audioContext.createBuffer(1,samples.length,engine.audioSampleRate());
+        var buf = buffer.getChannelData(0)
+        for (i = 0; i < samples.length; i++) {
+          buf[i] = samples[i];
+        }
+
+        // tell the source which sound to play
+        source.buffer = buffer;          
+
+        // connect the source to the context's destination (the speakers)           
+        source.connect(audioContext.destination);       
+        
+        // play the source now
+        source.noteOn(lastAudioTimeFinish);  
+        lastAudioTimeFinish = lastAudioTimeFinish + buffer.duration ;                        
+        console.log(buffer.duration, lastAudioTimeFinish);
     }
   });
   engine.reset();

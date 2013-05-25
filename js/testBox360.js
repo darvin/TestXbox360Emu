@@ -35,6 +35,17 @@ EmuEngine.prototype.maxNumberOfControllers = function() {
 }
 
 
+// ### audioChannelCount()
+EmuEngine.prototype.audioChannelCount = function() {
+  throw "You must implement this function!";
+}
+
+// ### audioSampleRate()
+EmuEngine.prototype.audioSampleRate = function() {
+  throw "You must implement this function!";
+}
+
+
 // ## State management
 // ### loadRom(rom)
 EmuEngine.prototype.loadRom = function(rom) {
@@ -90,6 +101,8 @@ EmuEngine.prototype.controllerDisconnected = function(player) {
 
 var TEST_BOX_360_SCREEN_WIDTH = 700;
 var TEST_BOX_360_SCREEN_HEIGHT = 700;
+var TEST_BOX_360_TICKS_PER_SECOND = 25;
+var TEST_BOX_360_AUDIO_SAMPLE_RATE = 22050;
 
 var ProcessingSketch = (function($p) {
 
@@ -236,6 +249,45 @@ $p.draw = draw;
 
 
 
+function makeSampleFunction() {
+    var oneLiner = "t * ((t>>12|t>>8)&63&t>>4);";
+    
+    var oneLiner = oneLiner.replace(/sin/g, "Math.sin");
+    var oneLiner = oneLiner.replace(/cos/g, "Math.cos");
+    var oneLiner = oneLiner.replace(/tan/g, "Math.tan");
+    var oneLiner = oneLiner.replace(/floor/g, "Math.floor");
+    var oneLiner = oneLiner.replace(/ceil/g, "Math.ceil");
+    
+    if (window.console) {
+  console.log(oneLiner);
+    }
+
+    eval("var f = function (t) { return " + oneLiner + "}");
+    return f;
+}
+
+function generateSound() {
+    var frequency = TEST_BOX_360_AUDIO_SAMPLE_RATE;
+    var seconds = 30;
+
+    var sampleArray = [];
+    var f = makeSampleFunction();
+    
+    for (var t = 0; t < frequency*seconds; t++) {
+        // Between 0 - 65535
+//        var sample = Math.floor(Math.random()*65535);
+        
+        var sample = (f(t)) & 0xff;
+        sample *= 256;
+        if (sample < 0) sample = 0;
+        if (sample > 65535) sample = 65535;
+        
+        sampleArray.push(sample);
+    }
+    return [frequency, sampleArray];
+}
+
+
 
 // # TestBox360 simulator
 TestBox360Engine = function (opts) {
@@ -249,6 +301,7 @@ TestBox360Engine = function (opts) {
   this.opts = opts;
   this._initControlStates();
   this._initScreen();
+  this._initMusic();
 
 }
 TestBox360Engine.prototype = new EmuEngine();
@@ -264,6 +317,23 @@ TestBox360Engine.prototype._initScreen = function() {
   this._p = new Processing(this._canvas, ProcessingSketch);
 
 }
+
+TestBox360Engine.prototype._initMusic = function() {
+  var gen = generateSound()
+  this._musicSampleArray = gen[1];
+  this._musicSampleIndex = 0;
+  this._tickToMusicSample =0;
+
+}
+
+TestBox360Engine.prototype._nextMusicSample = function(sampleCount) {
+  if ((this._musicSampleIndex+sampleCount)>=this._musicSampleArray.length)
+    this._musicSampleIndex=0;
+  result = this._musicSampleArray.slice(this._musicSampleIndex, this._musicSampleIndex+sampleCount);
+  this._musicSampleIndex +=sampleCount;
+  return result;
+}
+
 
 
 
@@ -286,8 +356,16 @@ TestBox360Engine.prototype._tick = function() {
 
 
   this.opts.onVideoFrame(this._canvas.getContext("2d").getImageData(0,0, this._canvas.width, this._canvas.width));
+  if (this._tickToMusicSample>=TEST_BOX_360_TICKS_PER_SECOND-10) {
+      this._tickToMusicSample =0;
 
-  setTimeout(this._tick.bind(this), 1);
+    this.opts.onAudioSamples(0, this._nextMusicSample(TEST_BOX_360_AUDIO_SAMPLE_RATE));
+
+  } else {
+    this._tickToMusicSample ++;
+  }
+  if (this._running)
+    setTimeout(this._tick.bind(this), 1000.0/TEST_BOX_360_TICKS_PER_SECOND);
 }
 
 
@@ -339,7 +417,6 @@ TestBox360Engine.prototype.stop = function() {
 }
 TestBox360Engine.prototype.start = function() {
   this._running = true;
-  console.log(this);
   this._p.loop();
 
   this._tick();
@@ -350,6 +427,7 @@ TestBox360Engine.prototype.reset = function() {
   this._controlState = {};
   this._initControlStates();
   this._initScreen();
+  this._initMusic();
   this.start();
 }
 TestBox360Engine.prototype.isRunning = function() {
@@ -365,6 +443,7 @@ TestBox360Engine.prototype.loadState = function(state) {
 }
 
 TestBox360Engine.prototype.buttonStateChanged = function(player, buttonName, buttonState) {
+  
   this._controlState[player][buttonName] = buttonState;
   console.log([" - USER: ",player, "       BUTTON: ", buttonName, "   STATE: ", buttonState].join(""));
 }
@@ -381,4 +460,12 @@ TestBox360Engine.prototype.controllerDisconnected = function(player) {
   this._numberOfConnectedControllers --;
   delete this._controlState[player];
   console.log(["Controller disconnected for user #",player].join(""));
+}
+
+TestBox360Engine.prototype.audioSampleRate = function() {
+  return TEST_BOX_360_AUDIO_SAMPLE_RATE;
+}
+
+TestBox360Engine.prototype.audioChannelCount = function() {
+  return 1;
 }
