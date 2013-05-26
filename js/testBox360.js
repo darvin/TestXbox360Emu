@@ -439,11 +439,14 @@ TestBox360Engine.prototype.isRunning = function() {
 }
 
 TestBox360Engine.prototype.saveState = function() {
+  console.log("Saving state:"+this._memory);
   return this._memory;
 }
 
 TestBox360Engine.prototype.loadState = function(state) {
   this._memory = state;
+  console.log("State loaded:"+this._memory);
+
 }
 
 TestBox360Engine.prototype.buttonStateChanged = function(player, buttonName, buttonState) {

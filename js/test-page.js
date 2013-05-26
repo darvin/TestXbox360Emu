@@ -189,6 +189,16 @@ $(function(){
     engine.reset();
   });
 
+
+  var savedGameState = null;
+  $("#button-save").mousedown(function(){
+    savedGameState = engine.saveState();
+  });
+  $("#button-load").mousedown(function(){
+    if (savedGameState)
+      engine.loadState(savedGameState);
+  });
+
   function handleFileSelect(evt) {
     var files = evt.target.files; // FileList object
     var file = files[0]
