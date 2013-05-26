@@ -409,7 +409,11 @@ TestBox360Engine.prototype.maxNumberOfControllers = function() {
 
 
 TestBox360Engine.prototype.loadRom = function(rom) {
-  this._memory = rom;
+  var romArrSliced = rom.slice(0,20);
+
+
+  this._memory = String.fromCharCode.apply(null, new Uint8Array(romArrSliced));
+  console.log(["Rom loaded: '",this._memory,"'"].join(""));
 }
 TestBox360Engine.prototype.stop = function() {
   this._running = false;

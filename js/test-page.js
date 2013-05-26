@@ -43,7 +43,6 @@ $(function(){
         // play the source now
         source.noteOn(lastAudioTimeFinish);  
         lastAudioTimeFinish = lastAudioTimeFinish + buffer.duration ;                        
-        console.log(buffer.duration, lastAudioTimeFinish);
     }
   });
   engine.reset();
@@ -189,6 +188,23 @@ $(function(){
   $("#button-reset").mousedown(function(){
     engine.reset();
   });
+
+  function handleFileSelect(evt) {
+    var files = evt.target.files; // FileList object
+    var file = files[0]
+    var reader = new FileReader();
+    reader.onloadend = function(loadEvt) {
+      var romArray = loadEvt.target.result;
+      engine.loadRom(romArray);
+    };
+
+    reader.readAsArrayBuffer(file);
+
+    
+  }
+
+  document.getElementById('file-rom').addEventListener('change', handleFileSelect, false);
+
 
 
 
