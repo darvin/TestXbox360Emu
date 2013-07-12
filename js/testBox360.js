@@ -3,6 +3,7 @@
 // ### Constructor options
 //   * `onAudioSamples`: function(samples)
 //   * `onVideoFrame`: function(buffer)
+//   * `onStatusMessage`: function(statusMessage)
 //   * `onFps`: function(fps)
 //   * `canvas`: optional, not recommended - Canvas object
 
